@@ -1,0 +1,215 @@
+#!/usr/bin/python3
+#?-row -search -path -help
+
+# Set the version
+version = "1.0"
+
+# Import
+from os import listdir
+from os.path import exists
+from sys import argv
+
+# Make a credits variable, also hello to anyone who is reading this :p
+# Here are the credits
+
+credits = """
+Created by Wallee#8314/Red-exe-Engineer:
+
+  This program is based on the Android command also known as Toybox and serves much the same function.
+
+  Toybox, in a nutshell, lists available commands.
+
+  If you think you can do that by just typing \"ls /usr/bin\" you are most certainly correct!
+  But Toybox also lets you search for stuff and set the row size, so it is much like a fancy ls :p
+
+Arguments:
+   -r -row (intager)     Change how many rows will be used when printing  (default / 2)
+   -s -search (string)   Allows you to search with a key word           (default / None)
+   -p -path (string)     Set the search directory path                (default / /usr/bin)
+
+   -v -version           Shows the current version of Toybox
+   -h -help              Shows this
+
+Usefull links:
+Original Toybox (Android) https://github.com/landley/toybox
+New Toybox (linux)        https://github.com/Red-exe-Engineer/Toybox
+
+For help, DM Wallee#8414 on Discord.
+"""
+
+# Set some variables
+rows = 2
+search = ""
+args = argv[1:]
+
+items = listdir("/usr/bin")
+length = -1
+row = 0
+
+# Check if any arguments were giving
+if len(args) > 0:
+
+    # If the current argument is help
+    if args[0] in ["-h", "-help"]:
+
+        # If the user gave more arguments
+        if len(args) > 2:
+            exit("-help does not need more arguments")
+
+        # Print the credits variable
+        exit(credits)
+
+    # If the current argument is version
+    if args[0] in ["-v", "-version"]:
+
+        # Of tje iser gave more arguments
+        if len(args) > 2:
+            exit("-version does not need more arguments")
+
+        # Print the version of Toybox
+        exit(f'Toybox version: {version}')
+
+    # Repeat as long as an argument remains
+    while len(args) != 0:
+
+        # If the current argument is row
+        if args[0] in ["-r", "-row"]:
+
+            # Check if the user gave another argument
+            if len(args) > 1:
+
+                # Error may be caused by not being able to convert the second argument to an int
+                try:
+
+                    # Set rows to the seconds argument
+                    rows = int(args[1])
+
+                    # Remove 2 items from the arguments list
+                    args.pop(0)
+                    args.pop(0)
+
+                # Someone made a mistake -_-
+                except:
+
+                    # Tell the user that the second argument could not be used
+                    exit(f'Cannot interpret {args[1]} as an interger')
+
+            # There isn't another argument
+            else:
+
+                # Tell the user they need to give another argument
+                exit("A value for rows was not provided")
+
+        # If the current argument is search
+        elif args[0] in ["-s", "-search"]:
+
+            # Check if the user gave another argument
+            if len(args) > 1:
+
+                # Set search to the second argument
+                search = args[1]
+
+                # Remove 2 items from the arguments list
+                args.pop(0)
+                args.pop(0)
+
+            # There isn't another argument
+            else:
+
+                # Tell the user they need to provide a search argument
+                exit("No search was provided")
+
+        # If the current argument is path
+        elif args[0] in ["-p", "-path"]:
+
+            # Check if a path is provided
+            if len(args) > 1:
+
+                # Set path to the second argument
+                path = args[1]
+
+                # Check if the path exists
+                if not exists(path):
+                    print(f'"{path}" is not a path, ', end="")
+
+                    if path.startswith("/"):
+                        exit(f'perhaps you meant {path[1:]}')
+                    else:
+                        exit(f'perhaps you meant /{path}')
+
+                # Try to open the directory the user provided
+                try:
+                    items = listdir(path)
+
+                # The user provided a file
+                except NotADirectoryError:
+                    exit(f'Cannot list contents of "{path}" (not a directory)')
+
+                # The program does not have permission to read from the folder
+                except PermissionError:
+                    exit(f'Cannot list contents of "{path}" (permission denied)')
+
+                # IDK what else could happen but can never be too safe
+                except:
+                    exit(f'Fatel error listing the contents of "{path}"')
+
+                # Remove 2 items from the arguments list
+                args.pop(0)
+                args.pop(0)
+
+            # The user did not provide a path
+            else:
+
+                # Tell the user to give one
+                exit("No path was provided")
+
+        # The current argument isn't found/programmed
+        else:
+
+            # Tell the user how to get help
+            exit(f'Unknown argument "{args[0]}"' + "\n See -h or -help for more detail")
+
+# Loop through items
+for item in items:
+
+    # Check if the length of the item is greater than any before it and search is in the item
+    if len(item) > length and search in item:
+
+         # Set length to the current length of item
+         length = len(item)
+
+# Loop through items, again
+for item in items:
+
+    # Check if search is in the current item
+    if search in item:
+
+        # Print the item making sure to remove the \n (new line) that print adds by default
+        print(item, end="")
+
+        # Check if the row % rows is equal to rows - 1
+        if row%rows == rows-1:
+
+            # Print a new line by printing nothing
+            print()
+
+        # Else row % rows isn't equal to rows - 1
+        else:
+
+            # Repeat the length - the length of the current item + one
+            for i in range(length-len(item)+1):
+
+                # Print a space, making sure to remove the \n (new line) print adds by default
+                print(" ", end="")
+
+        # Add one to row
+        row += 1
+
+# Check if row -1 % rows equals rows - 1
+if (row-1)%rows != rows-1:
+
+    # Print a new line to make sure the user gets a seperate row from the output
+    print()
+
+# Exit the program
+exit()
